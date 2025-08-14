@@ -1,9 +1,15 @@
 ORG 0       ;sets the origin of our program so nasm knows how to offset
 BITS 16     ;tells nasm we are going to use 16 bit instructions for our program
+_start:
+    jmp short start
+    nop
 
-jmp 0x7c0:start     ;setting code segment register as 0x7c0
+times 33 db 0       ;filling 33 bytes with 0 because some BIOS overwrite the starting bytes with own data.(BIOS Parameter Control Block) 
 
 start:              ;label
+    jmp 0x7c0:step2 ;setting code segment register as 0x7c0
+
+step2:
     cli             ;clear interrupts (also disables them so they dont pause our code execution next)
     mov ax,0x7c0
     mov ds,ax       ;setting data segment register
