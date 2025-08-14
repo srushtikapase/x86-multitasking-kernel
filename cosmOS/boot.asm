@@ -1,7 +1,17 @@
-ORG 0x7c00  ;sets the origin of our program so nasm knows how to offset
+ORG 0       ;sets the origin of our program so nasm knows how to offset
 BITS 16     ;tells nasm we are going to use 16 bit instructions for our program
 
+jmp 0x7c0:start     ;setting code segment register as 0x7c0
+
 start:              ;label
+    cli             ;clear interrupts (also disables them so they dont pause our code execution next)
+    mov ax,0x7c0
+    mov ds,ax       ;setting data segment register
+    mov es,ax       ;setting extra register
+    mov ax,0x00     
+    mov ss,ax       ;setting stack segment register
+    mov sp,0x7c00   ;setting stack pointer(it grows down)
+    sti             ;enables interrupts
     mov si,message  ;move the address of label message to the si register essentially pointing to first char 'h'
     call print      
     jmp $           ;jumps to itself, infinite loop
