@@ -9,6 +9,20 @@ times 33 db 0       ;filling 33 bytes with 0 because some BIOS overwrite the sta
 start:              ;label
     jmp 0x7c0:step2 ;setting code segment register as 0x7c0
 
+handle_zero:        ;making our own handle divide by zero interrupt invoked by processor(int 0)
+    mov ah, 0eh
+    mov al,'0'
+    mov bx,0
+    int 0x10
+    iret            ;for ending interrupt we must do iret otherwise it will keep executing that interrupt
+
+handle_one:         ;making our own interupt 1. There are 256 interrupts each taking 4B space in order.(2B: offset,2B: segment)
+    mov ah,0eh      ;calling that interrupt we can give decimal or hex and then it will calculate that absolute address
+    mov al,'1'      ;and start executing handler code at that address
+    mov bx,0        ;Interrupt Vector Table(IVT) is the first thing in RAM
+    int 0x10
+    iret
+
 step2:
     cli             ;clear interrupts (also disables them so they dont pause our code execution next)
     mov ax,0x7c0
@@ -18,6 +32,13 @@ step2:
     mov ss,ax       ;setting stack segment register
     mov sp,0x7c00   ;setting stack pointer(it grows down)
     sti             ;enables interrupts
+    mov word[ss:0x00],handle_zero   ;moving 2B of offset into ss+offset. We use ss as its zero, otherwise by def it will use ds
+    mov word[ss:0x02],0x7c0         ;moving 2B of segment.
+    mov ax,0
+    div ax                          ;forcefully invoking div by zero exception
+    mov word[ss:0x04],handle_one    ;doing the same for interrupt 1
+    mov word[ss:0x06],0x7c0
+    int 1                           ;we can always call interrupt like this also
     mov si,message  ;move the address of label message to the si register essentially pointing to first char 'h'
     call print      
     jmp $           ;jumps to itself, infinite loop
