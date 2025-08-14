@@ -42,6 +42,8 @@ step2:
     mov bx,buffer   ;stores reference to buffer which is just after our 512th byte.
     int 0x13        ;interupt to load sector from disk into es:bx
     jc error        ;jc means jump carry basically if carry flag is set means error occured.
+    mov si,buffer
+    call print
     jmp $           ;jumps to itself, infinite loop
 
 
